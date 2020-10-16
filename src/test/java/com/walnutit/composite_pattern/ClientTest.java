@@ -17,15 +17,51 @@ package com.walnutit.composite_pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 
 /**
  * @author Daniel Krentzlin
  *
  */
 class ClientTest {
+
+	private static Logger LOG = null;
+	private static MemoryAppender memoryAppender;
+	private static final String LOGGER_NAME = "com.walnutit.composite_pattern.Client";
+
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@BeforeAll
+	static void setUpBeforeClass() throws Exception {
+
+		LOG = (Logger) LoggerFactory.getLogger(LOGGER_NAME);
+		memoryAppender = new MemoryAppender();
+		memoryAppender.setContext(
+				(LoggerContext) LoggerFactory.getILoggerFactory());
+		LOG.setLevel(Level.INFO);
+		LOG.addAppender(memoryAppender);
+		memoryAppender.start();
+	}
+
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@AfterAll
+	static void tearDownAfterClass() throws Exception {
+		memoryAppender.reset();
+		memoryAppender.stop();
+	}
 
 	Client client;
 
@@ -36,7 +72,7 @@ class ClientTest {
 	 */
 	@BeforeEach
 	void setUp() throws Exception {
-		client = new Client();
+		client = Client.getClient();
 		expectedDepartmentManager = new DepartmentManager(1,
 				"Max Mustermann");
 		Employee employee1 = new EmployeeImpl(2, "Sabine Musterfrau");
@@ -83,7 +119,7 @@ class ClientTest {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("The employees of the department leader"
+		sb.append("The employees of the department leader "
 				+ expectedDepartmentManager.getName() + " are: ");
 
 		if (expectedDepartmentManager instanceof DepartmentManager) {
@@ -94,6 +130,20 @@ class ClientTest {
 
 		}
 		return sb.toString();
+	}
+
+	@Test
+	public void runTest() throws Exception {
+		// given
+		String[] args = new String[] {};
+
+		// when
+		client.run(args);
+
+		// then
+		assertTrue(memoryAppender.contains(
+				"The employees of the department leader Max Mustermann are: Sabine Musterfrau, Sherlock Holmes, ",
+				Level.INFO));
 	}
 
 }

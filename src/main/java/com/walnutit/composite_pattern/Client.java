@@ -15,13 +15,28 @@
  */
 package com.walnutit.composite_pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+
 /**
  * @author Daniel Krentzlin
  *
  */
-public class Client {
+public class Client implements CommandLineRunner {
+	
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(Client.class);
 
 	private Employee departmentManager;
+
+	public static Client getClient() {
+		return new Client();
+	}
+
+	private Client() {
+
+	}
 
 	public void startClient() {
 		departmentManager = new DepartmentManager(1,
@@ -37,7 +52,7 @@ public class Client {
 			((DepartmentManager) departmentManager).add(employee2);
 		}
 	}
-	
+
 	public Employee getDeparmentManager() {
 		return departmentManager;
 	}
@@ -47,17 +62,26 @@ public class Client {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("The employees of the department leader"
+		sb.append("The employees of the department leader "
 				+ departmentManager.getName() + " are: ");
 
 		if (departmentManager instanceof DepartmentManager) {
 			for (Employee employee : ((DepartmentManager) departmentManager)
 					.getEmployees().values()) {
-				sb.append( employee.getName()+ ", ");
+				sb.append(employee.getName() + ", ");
 			}
 
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+
+		Client client = Client.getClient();
+		client.startClient();
+		LOGGER.info(client.toString());
+
 	}
 
 }
